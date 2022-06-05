@@ -1,7 +1,7 @@
 const express = require('express');
-const express_graphql = require('express_graphql'); // middleware
-const {buildSchema} = require('graphq');
-const app = express();
+const expressGraphQL = require('express-graphql').graphqlHTTP;; // middleware
+const {buildSchema} = require('graphql');
+
 
 // GraphQL schema
 var schema = buildSchema(`
@@ -10,12 +10,20 @@ var schema = buildSchema(`
   }
 `);
 
-app.get('/', (req, res) => {
-  res.send('Hello from App Engine!');
-});
+// Root Resolver
+// we can attach a function which is called each time
+// a query from our schema needs to be executed
+root = {
+  message: () => 'Hello World'
+}
 
-// Listen to the App Engine-specified port, or 8080 otherwise
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}...`);
-});
+// Create an express server and a GraphQL endpoint
+var app = express();
+app.use('/graphql', expressGraphQL({
+    schema: schema,
+    rootValue: root,
+    graphiql: true
+}));
+
+// Start the server
+app.listen(4000, () => console.log('Express GraphQL Server Now Running On localhost:4000/graphql'));
