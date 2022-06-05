@@ -1,7 +1,9 @@
 const express = require('express');
-const express_graphql = require('express_graphql');
+const express_graphql = require('express_graphql'); // middleware
 const {buildSchema} = require('graphq');
 const app = express();
+
+
 
 app.get('/', (req, res) => {
   res.send('Hello from App Engine!');
