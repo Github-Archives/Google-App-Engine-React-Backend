@@ -1,4 +1,6 @@
-# Reminder -> since node_modules is not in the repo u need to run npm build when you pull
+# Reminder -> since node_modules is not in the repo u need to run this after you pull
+
+## npm install
 
 # Tutorial
 
