@@ -1,5 +1,5 @@
 const express = require('express');
-const expressGraphQL = require('express-graphql').graphqlHTTP;; // middleware
+const { graphqlHTTP } = require('express-graphql'); // middleware
 const {buildSchema} = require('graphql');
 
 
@@ -19,7 +19,7 @@ root = {
 
 // Create an express server and a GraphQL endpoint
 var app = express();
-app.use('/graphql', expressGraphQL({
+app.use('/graphql', graphqlHTTP({
     schema: schema,
     rootValue: root,
     graphiql: true
