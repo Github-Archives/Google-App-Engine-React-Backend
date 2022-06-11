@@ -1,1 +1,4 @@
-runtime: nodejs14
+runtime: nodejs16
+service: backend
+handlers: # unsure about this as is
+  - url: /.*
