@@ -11,3 +11,11 @@ https://www.youtube.com/watch?v=Vs_CBxCfFHk
 # Start
 
 node server.js
+
+# GraphQl
+
+place this into UI at localhost:4000/graphql
+
+    {
+        message
+    }
