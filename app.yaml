@@ -1,4 +1,2 @@
 runtime: nodejs16
-service: backend
-handlers: # unsure about this as is
-  - url: /.*
+service: backend-service
