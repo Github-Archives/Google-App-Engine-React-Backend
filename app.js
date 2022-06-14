@@ -47,53 +47,110 @@
 const { ApolloServer, gql } = require('apollo-server')
 const axios = require('axios')
 
+const endpoint = "https://finalspaceapi.com/api/v0/character/?limit=2";
+const headers = {
+	"content-type": "application/json",
+    "Authorization": "<token>"
+};
+const graphqlQuery = {
+    "operationName": "fetchAuthor",
+    "query": `query fetchAuthor { author { id name } }`,
+    "variables": {}
+};
+
+const response = axios({
+  url: endpoint,
+  method: 'post',
+  headers: headers,
+  data: graphqlQuery
+});
+
+console.log('Response', response.data); // data
+console.log('Errors', response.errors); // errors if any
+
+// // Axios GET Default
 // axios
 //   .get("https://finalspaceapi.com/api/v0/character/?limit=2")
 //   .then(function (response) {
 //     console.log(response);
 //   });
 
-const typeDefs = gql`
-    type User {
-        id: ID
-        # login: String
-        name: String
-        # avatar_url: String
-    }
 
-    type Query {
-        users: [User]
-    }
-`
+// // axios.request(config)
+// // axios.get(url[, config])
+// // Using the Request Config
+// axios
+//   .get("https://finalspaceapi.com/api/v0/character/?limit=2", {
+//     responseType: "json",
+//   })
+//   .then(function (response) {
+//     console.log(response.data);
+//   });
 
-console.log('Hello World!');
+// // Axios with responseType - stream
+// // GET request for remote image in node.js
+// const fs = require('fs');
+// axios({
+//     method: 'get',
+//     url: 'https://images.unsplash.com/photo-1642291555390-6a149527b1fa',
+//     responseType: 'stream'
+//   })
+//     .then(function (response) {
+//         // console.log(response.data.pipe);
+//       response.data.pipe(fs.createWriteStream('nature.jpg'))
+//     });
 
-const resolvers = {
-    Query: {
-        users: async () => {
-            try {
-                // const users = await axios.get('https://api.github.com/users')
-                const users = await axios.get('https://finalspaceapi.com/api/v0/character/?limit=2')
-                console.log("FUCKKKKKKKK........................users.data", users.data)
-                return users.data.map(({ id, name }) => ({
-                    id,
-                    name
-                }))
-                // return users.data.map(({ id, login, avatar_url }) => ({
-                //     id,
-                //     login,
-                //     avatar_url 
-                // }))
-            } catch (error) {
-                throw error
-            }
-        },
-    },
-}
 
-const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-})
+// // Using Asyc/Await
+//     async function getCharacters() {
+//         const { data } = await axios.get(
+//           "https://finalspaceapi.com/api/v0/character/?limit=4"
+//         );
+//         console.log(data);
+//       }
+//       getCharacters();
 
-server.listen().then(({ url }) => console.log(`Server ready at ${url}`))
+// const typeDefs = gql`
+//     type User {
+//         id: ID
+//         # login: String
+//         name: String
+//         # avatar_url: String
+//     }
+
+//     type Query {
+//         users: [User]
+//     }
+// `
+
+// console.log('Hello World!');
+
+// const resolvers = {
+//     Query: {
+//         users: async () => {
+//             try {
+//                 // const users = await axios.get('https://api.github.com/users')
+//                 const users = await axios.get('https://finalspaceapi.com/api/v0/character/?limit=2')
+//                 console.log("FUCKKKKKKKK........................users.data", users.data)
+//                 return users.data.map(({ id, name }) => ({
+//                     id,
+//                     name
+//                 }))
+//                 // return users.data.map(({ id, login, avatar_url }) => ({
+//                 //     id,
+//                 //     login,
+//                 //     avatar_url 
+//                 // }))
+//             } catch (error) {
+//                 throw error
+//             }
+//         },
+//     },
+// }
+
+// const server = new ApolloServer({
+//     typeDefs,
+//     resolvers,
+// })
+
+// server.listen().then(({ url }) => console.log(`Server ready at ${url}`))
