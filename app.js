@@ -6,18 +6,42 @@ const { buildSchema } = require('graphql') // takes a string and returns a schem
 
 const app = express();
 
+const events = [];
+
 app.use(bodyParser.json()); // parse incoming json bodies
+
+// name 'Event' anything
+// _id is a mongoDB id, ID is type
+// '!' means it is required/not nullable
+// this just cleans up what you're sending RootMutation.createEvent params
+// return an array of events !needs to be non-nullable/Event
 
 app.use(
     '/graphql', // single endpoint. '/graphql' can be named anything
     graphqlHTTP({ // middleware
         schema: buildSchema(`
+
+            type Event {
+                _id: ID!
+                title: String!
+                description: String!
+                price: Float!
+                date: String!
+            }
+
+            input EventInput {
+                title: String!
+                description: String!
+                price: Float!
+                date: String!
+            }
+
             type RootQuery {
-                events:[String!]!
+                events:[Event!]!
             }
 
             type RootMutation {
-                createEvent(name: String): String
+                createEvent(eventInput: EventInput): Event
             }
 
             schema {
@@ -25,13 +49,22 @@ app.use(
                 mutation: RootMutation
             }
         `),
+        // Resolver
         rootValue: { // Resolver: rootValue is the root object that will be used to resolve queries
-            events: () => {
-                return ['Romantic Cooking', 'Sailing', 'Hiking'];
+            events: () => { // resolver function
+                return events;
             },
-            createEvent: (args) => {
-                const eventName = args.name;
-                return eventName;
+            createEvent: (args) => { // resolver function
+                const event = {
+                    _id: Math.random().toString(),
+                    title: args.eventInput.title,
+                    description: args.eventInput.description,
+                    price: +args.eventInput.price, // + converts string to number/float
+                    date: args.eventInput.date
+                };
+                console.log(args)
+                events.push(event); // update/add event to array
+                return event; // don't just push to events array but return it too
             }
         },
         graphiql: true // enables the GraphiQL interface (optional)
