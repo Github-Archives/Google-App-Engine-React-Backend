@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { graphqlHTTP } = require('express-graphql'); // middleware for graphql
 const { buildSchema } = require('graphql') // takes a string and returns a schema object
+const mongoose = require('mongoose');
 
 
 const app = express();
@@ -9,6 +10,8 @@ const app = express();
 const events = [];
 
 app.use(bodyParser.json()); // parse incoming json bodies
+
+
 
 // name 'Event' anything
 // _id is a mongoDB id, ID is type
@@ -71,6 +74,10 @@ app.use(
     })
 );
 
-app.listen(3000)
-
-
+mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.t1ymu.mongodb.net/?retryWrites=true&w=majority`)
+    .then(() => {
+        app.listen(3000)
+    })
+    .catch(err => {
+        console.log('Error: ', err);
+    });
