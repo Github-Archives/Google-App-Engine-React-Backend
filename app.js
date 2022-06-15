@@ -2,16 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { graphqlHTTP } = require('express-graphql'); // middleware for graphql
 const { buildSchema } = require('graphql') // takes a string and returns a schema object
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); // relates to mongoDB
 
-const Event = require('./models/event');// import our own Model
-
+const Event = require('./models/event');// import our own event Model
+const User = require('./models/user');// import our own user Model
 
 const app = express();
 
 app.use(bodyParser.json()); // parse incoming json bodies
-
-
 
 // name 'Event' anything
 // _id is a mongoDB id, ID is type
@@ -32,11 +30,22 @@ app.use(
                 date: String!
             }
 
+            type User {
+                _id: ID!
+                email: String!
+                password: String
+            }
+
             input EventInput {
                 title: String!
                 description: String!
                 price: Float!
                 date: String!
+            }
+
+            input UserInput {
+                email: String!
+                password: String!
             }
 
             type RootQuery {
@@ -45,6 +54,7 @@ app.use(
 
             type RootMutation {
                 createEvent(eventInput: EventInput): Event
+                createUser(userInput: UserInput): User
             }
 
             schema {
@@ -53,7 +63,7 @@ app.use(
             }
         `),
 
-        // Resolver
+        // Resolvers
         rootValue: { // Resolver: rootValue is the root object that will be used to resolve queries
             events: () => { // resolver function
                 return Event.find() // allows us to find documents in this collection
@@ -85,11 +95,18 @@ app.use(
                         throw err; // graphql will throw an error too
                     });
             }
+            createUser: (args) => {
+                const user = new User({
+                    email: args.userInput.email,
+                    // this would be stored as a plain text password in the database. if someone gets access to db they will see all passwords. so we need to use a hash instread
+                    //  password: args.userInput.password
+                    password: args.userInput.password
+            }
         },
         graphiql: true // enables the GraphiQL interface (optional)
     })
 );
-
+// Connect to the cloud mongoDb database with credentials & db name. somehow 'hooks' into the mongoDB database when running
 mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.t1ymu.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`)
     .then(() => {
         app.listen(3000)
