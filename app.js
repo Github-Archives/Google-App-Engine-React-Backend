@@ -87,13 +87,25 @@ app.use(
           description: args.eventInput.description,
           price: +args.eventInput.price, // + converts string to number/float
           date: new Date(args.eventInput.date),
+          creator: "62a9348fa3bb6396bf534734", // new user. mongoose will automatically convert this string to a mongoDB id
         }); // Event constructor created by our Mongoose model
+        let createdEvent; // ?
         return event
           .save() // save to mongoDB because of the Mongoose package
           .then((result) => {
-            console.log(result);
-            // return result; // returns too much metadata
-            return { ...result._doc, _id: event.id }; // _doc provided by mongoose that leaves out extra metadata
+            // alternative -> return result; // returns too much metadata
+            createdEvent = { ...result._doc, _id: result._doc._id.toString() }; // _doc provided by mongoose that leaves out extra metadata
+            return User.findById("62a9348fa3bb6396bf534734"); //
+          })
+          .then((user) => {
+            if (!user) {
+              throw new Error("User not found");
+            }
+            user.createdEvents.push(event); // can pass event or id
+            return user.save();
+          })
+          .then((result) => {
+            return createdEvent;
           })
           .catch((err) => {
             console.log("Save Error: ", err);
@@ -101,8 +113,14 @@ app.use(
           });
       },
       createUser: (args) => {
-        return bcrypt
-          .hash(args.userInput.password, 12) // (hash arg sent, salting rounds)
+        // before creating a new user, make sure the email is not already in use in the db
+        return User.findOne({ email: args.userInput.email })
+          .then((user) => {
+            if (user) {
+              throw new Error("User already exists");
+            }
+            return bcrypt.hash(args.userInput.password, 12); // (hash arg sent, salting rounds)
+          })
           .then((hashedPassword) => {
             const user = new User({
               email: args.userInput.email,
@@ -112,7 +130,7 @@ app.use(
           })
           .then((result) => {
             // this is now the created user
-            return { ...result._doc, _id: result.id };
+            return { ...result._doc, password: null, _id: result.id }; // password: null so that mutation doesn't return password
           })
           .catch((err) => {
             throw err;
