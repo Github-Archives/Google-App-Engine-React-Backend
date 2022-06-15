@@ -1,6 +1,8 @@
-const mongoose = require("mongoose");
+// * these mongoose models have no direct effect on the API.
 
-const Schema = mongoose.Schema;
+const mongoose = require("mongoose")
+
+const Schema = mongoose.Schema
 
 // how a user object should look like in our app/database
 const userSchema = new Schema({
@@ -19,6 +21,6 @@ const userSchema = new Schema({
       ref: "Event", // let mongoose know that two models are related
     },
   ],
-});
+})
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema)
