@@ -94,13 +94,14 @@ app.use(
                         console.log('Save Error: ', err)
                         throw err; // graphql will throw an error too
                     });
-            }
+            },
             createUser: (args) => {
                 const user = new User({
                     email: args.userInput.email,
                     // this would be stored as a plain text password in the database. if someone gets access to db they will see all passwords. so we need to use a hash instread
                     //  password: args.userInput.password
                     password: args.userInput.password
+                });
             }
         },
         graphiql: true // enables the GraphiQL interface (optional)
