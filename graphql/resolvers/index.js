@@ -4,6 +4,14 @@ const Event = require("../../models/event") // import our own event Model
 const User = require("../../models/user") // import our own user Model
 const Booking = require("../../models/booking")
 
+const transformEvent = (event) => {
+  return {
+    ...event._doc,
+    _id: event.id,
+    date: new Date(event._doc.date).toISOString(),
+    creator: user.bind(this, event.creator),
+  }
+}
 // name 'Event' anything
 // _id is a mongoDB id, ID is type
 // '!' means it is required/not nullable
@@ -12,16 +20,9 @@ const Booking = require("../../models/booking")
 const events = async (eventIds) => {
   try {
     const events = await Event.find({ _id: { $in: eventIds } })
-    events.map((event) => {
-      return {
-        ...event._doc,
-        _id: event.id,
-        date: new Date(event._doc.date).toISOString(),
-        creator: user.bind(this, event.creator),
-      }
+    return events.map((event) => {
+      return transformEvent(event)
     })
-    // ! Video states this line below should return events.map(...) to return the transformed events... but doesn't show this on github
-    return events
   } catch (err) {
     throw err
   }
@@ -30,11 +31,7 @@ const events = async (eventIds) => {
 const singleEvent = async (eventId) => {
   try {
     const event = await Event.findById(eventId)
-    return {
-      ...event._doc,
-      _id: event.id,
-      creator: user.bind(this, event.creator),
-    }
+    return transformEvent(event)
   } catch (err) {
     throw err
   }
@@ -61,12 +58,7 @@ module.exports = {
     try {
       const events = await Event.find() // allows us to find documents in this collection
       return events.map((event) => {
-        return {
-          ...event._doc,
-          _id: event.id,
-          date: new Date(event._doc.date).toISOString(), // makes sure date string comes back more readable
-          creator: user.bind(this, event._doc.creator), // ?
-        }
+        return transformEvent(event)
       })
     } catch (err) {
       throw err
@@ -102,12 +94,7 @@ module.exports = {
     let createdEvent // ?
     try {
       const result = await event.save() // save to mongoDB because of the Mongoose package
-      createdEvent = {
-        ...result._doc,
-        _id: result._doc._id.toString(),
-        date: new Date(event._doc.date).toISOString(), // makes sure date string comes back more readable
-        creator: user.bind(this, result._doc.creator),
-      } // _doc provided by mongoose that leaves out extra metadata
+      createdEvent = transformEvent(result) // _doc provided by mongoose that leaves out extra metadata
       // ! this SAME number is hardcoded rn from events/_id: ObjectId('here')
       const creator = await User.findById("62ad36872f5a4044773b8026")
 
@@ -163,11 +150,7 @@ module.exports = {
   cancelBooking: async (args) => {
     try {
       const booking = await Booking.findById(args.bookingId).populate("event")
-      const event = {
-        ...booking.event._doc,
-        _id: booking.event.id,
-        creator: user.bind(this, booking.event._doc.creator),
-      }
+      const event = transformEvent(booking._doc.event)
       await Booking.deleteOne({ _id: args.bookingId })
       return event
     } catch (err) {
