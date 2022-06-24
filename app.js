@@ -7,9 +7,14 @@ const mongoose = require("mongoose") // relates to mongoDB
 const graphQlSchema = require("./graphql/schema/index")
 const graphQlResolvers = require("./graphql/resolvers/index")
 
+const isAuth = require("./middleware/is-auth")
+
 const app = express()
 
 app.use(bodyParser.json()) // parse incoming json bodies
+
+// use the middleware to check if isAuthorized
+app.use(isAuth)
 
 app.use(
   "/graphql", // single endpoint. '/graphql' can be named anything

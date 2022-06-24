@@ -4,7 +4,16 @@ const Booking = require("../../models/booking")
 const { transformBooking, transformEvent } = require("./merge")
 
 module.exports = {
-  bookings: async () => {
+  bookings: async (args, req) => {
+    // makes sure only authenticated users can use bookings
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated!")
+    }
+    if (!authHeader) {
+      // not authHeader so there must not be a valid token
+      req.isAuth = false
+      return next() // leave function and request continues with extra meta data
+    }
     try {
       const bookings = await Booking.find()
       return bookings.map((booking) => {
@@ -15,16 +24,25 @@ module.exports = {
     }
   },
 
-  bookEvent: async (args) => {
+  bookEvent: async (args, req) => {
+    // makes sure only authenticated users can bookEvent
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated!")
+    }
     const fetchedEvent = await Event.findOne({ _id: args.eventId })
     const booking = new Booking({
-      user: "62ad36872f5a4044773b8026",
+      user: req.userId, // use real userId after validated
       event: fetchedEvent,
     })
     const result = await booking.save()
     return transformBooking(result)
   },
-  cancelBooking: async (args) => {
+  cancelBooking: async (args, req) => {
+    // makes sure only authenticated users can cancelBooking
+    // TODO: make sure user which cancels booking is the one logged in
+    if (!req.isAuth) {
+      throw new Error("Unauthenticated!")
+    }
     try {
       const booking = await Booking.findById(args.bookingId).populate("event")
       const event = transformEvent(booking._doc.event)
