@@ -1,29 +1,52 @@
-const express = require('express');
-const { graphqlHTTP } = require('express-graphql'); // middleware
-const {buildSchema} = require('graphql');
+const express = require("express")
+const bodyParser = require("body-parser")
+const { graphqlHTTP } = require("express-graphql") // middleware for graphql
+// const { buildSchema } = require("graphql") // takes a string and returns a schema object
+const mongoose = require("mongoose") // relates to mongoDB
 
+const graphQlSchema = require("./graphql/schema/index")
+const graphQlResolvers = require("./graphql/resolvers/index")
 
-// GraphQL schema
-var schema = buildSchema(`
-  type Query {
-    message: String
+const isAuth = require("./middleware/is-auth")
+
+// Middleware
+const app = express()
+
+app.use(bodyParser.json()) // parse incoming json bodies
+
+// since server and client have different urls CORS are triggered without this. we need to set the correct headers
+app.use((req, res, next) => {
+  // add headers to every response that is sent back by our server
+  res.setHeader("Access-Control-Allow-Origin", "*") // * means every host/client/location can send requests to this server!
+  res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS") // restricts methods allowed
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type", "Authorization") // restrict headers allowed to send to server
+  if (req.method === "OPTIONS") {
+    // OPTIONS = necessary browser related request before it looks for POST/GET
+    return res.sendStatus(200) // signals to the client that this is good
   }
-`);
+  next() // continue your request
+})
 
-// Root Resolver
-// we can attach a function which is called each time
-// a query from our schema needs to be executed
-root = {
-  message: () => 'Hello World'
-}
+// use the middleware to check if isAuthorized
+app.use(isAuth)
 
-// Create an express server and a GraphQL endpoint
-var app = express();
-app.use('/graphql', graphqlHTTP({
-    schema: schema,
-    rootValue: root,
-    graphiql: true
-}));
-
-// Start the server
-app.listen(4000, () => console.log('Express GraphQL Server Now Running On localhost:4000/graphql'));
+app.use(
+  "/graphql", // single endpoint. '/graphql' can be named anything
+  graphqlHTTP({
+    // middleware
+    schema: graphQlSchema,
+    rootValue: graphQlResolvers,
+    graphiql: true, // enables the GraphiQL interface (optional)
+  })
+)
+// Connect to the cloud mongoDb database with credentials & db name. somehow 'hooks' into the mongoDB database when running
+mongoose
+  .connect(
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.t1ymu.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`
+  )
+  .then(() => {
+    app.listen(8000)
+  })
+  .catch((err) => {
+    console.log("Error: ", err)
+  })
