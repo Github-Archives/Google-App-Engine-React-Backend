@@ -9,7 +9,7 @@ module.exports = {
       // before creating a new user, make sure the email is not already in use in the db
       const existingUser = await User.findOne({ email: args.userInput.email })
       if (existingUser) {
-        throw new Error("User exists already.")
+        throw new Error("User already exists.")
       }
       const hashedPassword = await bcrypt.hash(args.userInput.password, 12) // (hash arg sent, salting rounds)
 
